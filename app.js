@@ -67,11 +67,11 @@ app.post("/blog/insertMany",async(req,res,next)=>{
 app.get("/blogs",async(req,res,next)=>{
     try {
         const blogs=await BlogModel.find();
-    res.status(201).json({
+    res.status(200).json({
         statusCode:res.statusCode,
         data:{
-            blogs,
-            message:"data created successfully"
+            message:"all blogs fetched successfully",
+            blogs
         }
     })
     } catch (error) {
@@ -84,11 +84,12 @@ app.get("/blogs/:id",async(req,res,next)=>{
         const {id}=req.params;
         if(!isValidObjectId(id)) throw({status:401,message:"params is false"})
         const blog=await BlogModel.findOne({_id:id});
+        if(!blog) throw ({status:404,message:"blog not found"})
     res.status(201).json({
         statusCode:res.statusCode,
         data:{
-            blog,
-            message:"data created successfully"
+            message:"data created successfully",
+            blog
         }
     })
     } catch (error) {
@@ -100,11 +101,12 @@ app.delete("/blogs/:id",async(req,res,next)=>{
     try {
         const {id}=req.params;
         if(!isValidObjectId(id)) throw({status:401,message:"params is false"})
-        const blog=await BlogModel.deleteOne({_id:id});
+        const blog=await BlogModel.findOne({_id:id});
+        if(!blog) throw ({status:404,message:"blog not found"})
+        await BlogModel.deleteOne({_id:id});
     res.status(200).json({
         statusCode:res.statusCode,
         data:{
-            blog,
             message:"blog deleted successfully"
         }
     })
@@ -119,8 +121,8 @@ app.delete("/blogs",async(req,res,next)=>{
     res.status(200).json({
         statusCode:res.statusCode,
         data:{
-            blog,
-            message:"all blogs deleted successfully"
+            message:"all blogs deleted successfully",
+            blog
         }
     })
     } catch (error) {
@@ -131,17 +133,16 @@ app.delete("/blogs",async(req,res,next)=>{
 app.put("/blogs/objectAssign/:id",async(req,res,next)=>{
     try {
         const {title,text}=req.body;
-        const newBlog={title,blog}
+        const updatedBlog={title,text}
         const {id}=req.params;
-        if(!isValidObjectId(id)) throw({status:401,message:"params is false"})
-        const blog=await BlogModel.updateOne({_id:id});
+        if(!isValidObjectId(id)) throw({status:401,message:"params is false"});
+        const blog=await BlogModel.findOne({_id:id});
         if(!blog) throw{status:404,message:"not found blog"}
-        Object.assign(blog,newBlog)
+        Object.assign(blog,updatedBlog)
         await blog.save()
     res.status(200).json({
         statusCode:res.statusCode,
         data:{
-            blog,
             message:"blog updated successfully"
         }
     })
@@ -150,20 +151,21 @@ app.put("/blogs/objectAssign/:id",async(req,res,next)=>{
     }
 })
 //update one blog with updateOne
-app.patch("/blogs/updateOne/:id",async(req,res,next)=>{
+app.put("/blogs/updateOne/:id",async(req,res,next)=>{
     try {
         const {title,text}=req.body;
-        const newBlog={title,blog}
+        const newBlog={title,text}
         const {id}=req.params;
         if(!isValidObjectId(id)) throw({status:401,message:"params is false"})
-        const blog=await BlogModel.updateOne({_id:id});
+        const blog=await BlogModel.findOne({_id:id});
         if(!blog) throw{status:404,message:"not found blog"}
-        const result=await BlogModel.updateOne({_id:id},{$set:newBlog})
-        await blog.save()
+        const updatedblog=await BlogModel.updateOne({_id:id},{$set:newBlog});
+        if(updatedblog.modifiedCount==0) throw{status:404,message:"not updated"}
+        
     res.status(200).json({
         statusCode:res.statusCode,
         data:{
-            blog,
+            updatedblog,
             message:"blog updated successfully"
         }
     })
@@ -172,20 +174,21 @@ app.patch("/blogs/updateOne/:id",async(req,res,next)=>{
     }
 })
 //update one blog with findeOneAndUpdate
-app.patch("/blogs/findeOneAndUpdate/:id",async(req,res,next)=>{
+app.put("/blogs/findeOneAndUpdate/:id",async(req,res,next)=>{
     try {
         const {title,text}=req.body;
-        const newBlog={title,blog}
+        const newBlog={title,text}
         const {id}=req.params;
-        if(!isValidObjectId(id)) throw({status:401,message:"params is false"})
-        const blog=await BlogModel.findeOn({_id:id});
+        if(!isValidObjectId(id)) throw({status:401,message:"params is false"});
+        const blog=await BlogModel.findOne({_id:id});
         if(!blog) throw{status:404,message:"not found blog"}
         const result=await BlogModel.findOneAndUpdate({_id:id},{$set:newBlog})
+        if(!result) throw{status:404,message:"not updated"}
         await blog.save()
     res.status(200).json({
         statusCode:res.statusCode,
         data:{
-            blog,
+            result,
             message:"blog updated successfully"
         }
     })
