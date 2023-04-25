@@ -270,7 +270,7 @@ app.post("/validate/signup",async(req,res,next)=>{
      next(error)
     }
  });
-  //send file with multer 
+  //send one file with multer 
  app.post("/multer",uploadFile.single("image"),async(req,res,next)=>{
     try {
       console.log(req.file)
@@ -285,6 +285,7 @@ app.post("/validate/signup",async(req,res,next)=>{
      next(error)
     }
  });
+
 app.use(ErrorHandler);
 app.use(NotFoundError);
 app.listen(3000,()=>{

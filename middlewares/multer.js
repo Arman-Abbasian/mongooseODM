@@ -9,11 +9,21 @@ const storage=multer.diskStorage({
     },
     filename:function(req,file,cb){
         const ext=path.extname(file.originalname);
+        //format filter
+        const listOfAcceptedFormats=[".png",".jpg",".jpeg",".webp"];
+        const ListOfAcceptedMimtypes=["image/png","image/jpg","image/jpeg","image/webp"];
+        if(listOfAcceptedFormats.includes(ext)){
         const fileName=Date.now()+ext;
         cb(null,fileName)
+    }else{
+        cb(new Error("wrong format"))
+    }
     }
 });
+//size filter
+const maxsize=1000000;
 const uploadFile=multer({
-    storage:storage
+    storage:storage,
+    limits:{fileSize:maxsize}
 });
 module.exports={uploadFile}
