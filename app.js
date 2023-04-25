@@ -1,4 +1,5 @@
 const express=require("express");
+const multer=require("multer")
 
 const { NotFoundError, ErrorHandler } = require("./utils/errorHandlers");
 const { BlogModel } = require("./models/blog.model");
@@ -10,12 +11,14 @@ const { signupValidation } = require("./validator/signup.expressValidation.valid
 const { validate } = require("express-validation");
 const { signupValidationWithJoi } = require("./validator/signup.joi.validator");
 const { SignupSchemaWithValidate } = require("./validator/signup.validate.validator");
+const { uploadFile } = require("./middlewares/multer");
 
 
 const app=express();
 require("./config/mongo.config");
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
+app.use(express.static("public"))
 app.get("/",(req,res)=>{
     res.send("ok")
 })
@@ -261,6 +264,21 @@ app.post("/validate/signup",async(req,res,next)=>{
          statusCode:res.statusCode,
          data:{
              message:"data created successfully"
+         }
+     })
+    } catch (error) {
+     next(error)
+    }
+ });
+  //send file with multer 
+ app.post("/multer",uploadFile.single("image"),async(req,res,next)=>{
+    try {
+      console.log(req.file)
+     res.status(201).json({
+         statusCode:res.statusCode,
+         data:{
+            body:req.body,
+             message:"data sent successfully"
          }
      })
     } catch (error) {
