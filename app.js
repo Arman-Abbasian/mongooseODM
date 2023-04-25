@@ -11,7 +11,7 @@ const { signupValidation } = require("./validator/signup.expressValidation.valid
 const { validate } = require("express-validation");
 const { signupValidationWithJoi } = require("./validator/signup.joi.validator");
 const { SignupSchemaWithValidate } = require("./validator/signup.validate.validator");
-const { uploadFile } = require("./middlewares/multer");
+const { uploadFile, uploadSomeFiles } = require("./middlewares/multer");
 
 
 const app=express();
@@ -285,7 +285,38 @@ app.post("/validate/signup",async(req,res,next)=>{
      next(error)
     }
  });
-
+ //send some file with same fieldname with multer 
+ app.post("/multer/array",uploadFile.array("image"),async(req,res,next)=>{
+    try {
+      console.log(req.file)
+     res.status(201).json({
+         statusCode:res.statusCode,
+         data:{
+            body:req.body,
+            file:req.files,
+             message:"data sent successfully"
+         }
+     })
+    } catch (error) {
+     next(error)
+    }
+ });
+  //send some file with diffrent fieldname with multer 
+  app.post("/multer/someFiles",uploadSomeFiles.fields([{name:"image",maxCount:1},{name:"pdf",maxCount:1}]),async(req,res,next)=>{
+    try {
+      console.log(req.file)
+     res.status(201).json({
+         statusCode:res.statusCode,
+         data:{
+            body:req.body,
+            file:req.files,
+             message:"data sent successfully"
+         }
+     })
+    } catch (error) {
+     next(error)
+    }
+ });
 app.use(ErrorHandler);
 app.use(NotFoundError);
 app.listen(3000,()=>{
