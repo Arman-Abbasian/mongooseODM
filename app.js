@@ -3,6 +3,13 @@ const express=require("express");
 const { NotFoundError, ErrorHandler } = require("./utils/errorHandlers");
 const { BlogModel } = require("./models/blog.model");
 const { isValidObjectId } = require("mongoose");
+const { signupValidator } = require("./validator/signUp.validator");
+const { checkValidation } = require("./utils/checkValidation");
+const { SignupModel } = require("./models/signup.model");
+const { signupValidation } = require("./validator/signup.expressValidation.validator");
+const { validate } = require("express-validation");
+const { signupValidationWithJoi } = require("./validator/signup.joi.validator");
+const { SignupSchemaWithValidate } = require("./validator/signup.validate.validator");
 
 
 const app=express();
@@ -196,6 +203,70 @@ app.put("/blogs/findeOneAndUpdate/:id",async(req,res,next)=>{
         next (error)
     }
 })
+//validate the body data with express-validator package
+app.post("/expressValidator/signup",signupValidator(),checkValidation,async(req,res,next)=>{
+   try {
+    const {firstName,lastName,age,mobile,email,password}=req.body;
+    await SignupModel.create({firstName,lastName,age,mobile,email,password})
+    res.status(201).json({
+        statusCode:res.statusCode,
+        data:{
+            message:"data created successfully"
+        }
+    })
+   } catch (error) {
+    next(error)
+   }
+});
+//validate the body data with express-validation package
+app.post("/expressValidation/signup",validate(signupValidation),async(req,res,next)=>{
+    try {
+     const {firstName,lastName,age,mobile,email,password}=req.body;
+     await SignupModel.create({firstName,lastName,age,mobile,email,password})
+     res.status(201).json({
+         statusCode:res.statusCode,
+         data:{
+             message:"data created successfully"
+         }
+     })
+    } catch (error) {
+     next(error)
+    }
+ });
+ //validate the body data with joi package
+app.post("/joi/signup",async(req,res,next)=>{
+    try {
+        await signupValidationWithJoi.validateAsync(req.body)
+     const {firstName,lastName,age,mobile,email,password}=req.body;
+     await SignupModel.create({firstName,lastName,age,mobile,email,password})
+     res.status(201).json({
+         statusCode:res.statusCode,
+         data:{
+             message:"data created successfully"
+         }
+     })
+    } catch (error) {
+     next(error)
+    }
+ });
+  //validate the body data with validate package
+app.post("/validate/signup",async(req,res,next)=>{
+    try {
+      const [error]=SignupSchemaWithValidate.validate(req.body)
+      console.log(error)
+      if(error) throw error
+     const {firstName,lastName,age,mobile,email,password}=req.body;
+     await SignupModel.create({firstName,lastName,age,mobile,email,password})
+     res.status(201).json({
+         statusCode:res.statusCode,
+         data:{
+             message:"data created successfully"
+         }
+     })
+    } catch (error) {
+     next(error)
+    }
+ });
 app.use(ErrorHandler);
 app.use(NotFoundError);
 app.listen(3000,()=>{

@@ -1,3 +1,5 @@
+const { checkValidationWithExpressValidation } = require("./checkValidationWithExpressValidation");
+
 const NotFoundError=(req,res,next)=>{
     res.status(404).json({
         statusCode:res.statusCode,
@@ -13,7 +15,9 @@ const ErrorHandler=(err,req,res,next)=>{
     res.json({
         statusCode:err?.status || "internal server error",
         error:{
-            message:err?.message || "internal server error"
+            error:err.validator,
+            message:err?.message?.replace(/[\'\"\\]*/g,'') || "internal server error",
+            invalidParms:checkValidationWithExpressValidation(err)
         }
     })
 };
