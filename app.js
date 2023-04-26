@@ -1,6 +1,7 @@
 const express=require("express");
 const multer=require("multer");
 const fileUpload=require("express-fileupload");
+const cookieParser=require("cookie-parser")
 
 const path=require("path");
 const fs=require("fs");
@@ -22,7 +23,8 @@ const allRoutes=require("./routers/index");
 const app=express();
 require("./config/mongo.config");
 app.use(express.json())
-app.use(express.urlencoded({extended:true}))
+app.use(express.urlencoded({extended:true}));
+app.use(cookieParser('9fe82655ea3625047569f83052cf51eef4fdf9f20ea4f89354f924e462dc347c'))
 app.use(express.static("public"))
 app.use(fileUpload())
 app.use(allRoutes)
@@ -389,6 +391,58 @@ app.post("/validate/signup",async(req,res,next)=>{
         }
  })
 });
+//set a cookie with cookie-parser package
+app.get("/set-cookie",(req,res,next)=>{
+    try {
+        res.cookie('nodejs','express');
+        res.cookie('javascript','reactjs',{
+            maxAge:200000,
+            signed:true,
+            secure:true,
+            sameSite:"none"
+
+        })
+    res.status(201).json({
+        statusCode:res.statusCode,
+        data:{
+            message:"cookies got successfully"
+        }
+ })
+    } catch (error) {
+       next(error) 
+    }
+});
+//get a cookies with cookie-parser package
+app.get("/get-cookie",(req,res,next)=>{
+    try {
+       const cookies= req.cookies;
+       const signedcookies= req.signedCookies;
+    res.status(201).json({
+        statusCode:res.statusCode,
+        data:{
+            cookies,
+            signedcookies,
+            message:"cookie set successfully"
+        }
+ })
+    } catch (error) {
+       next(error) 
+    }
+});
+//remove a cookies with cookie-parser package
+app.get("/delete-cookie",(req,res,next)=>{
+    try {
+      res.clearCookie('javascript')
+    res.status(201).json({
+        statusCode:res.statusCode,
+        data:{
+            message:"cookie deleted successfully"
+        }
+ })
+    } catch (error) {
+       next(error) 
+    }
+})
 app.use(ErrorHandler);
 app.use(NotFoundError);
 app.listen(3000,()=>{
