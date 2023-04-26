@@ -363,17 +363,22 @@ app.post("/validate/signup",async(req,res,next)=>{
  })
 });
  //send some files with express-fileupload (mv) paackage
- app.post("/express-fileUpload-mv-someFiles",(req,res)=>{
+ app.post("/express-fileUpload-mv-someFiles",async(req,res)=>{
     if(!req.files|| Object.keys(req.files).length==0){
         throw {status:400,message:"no file uploaded"}
     }
-    const image=req.files.image;
-    const ext=path.extname(image.name);
+    for (const key in req.files){
+        const file=req.files[key];
+    const ext=path.extname(file.name);
     fs.mkdirSync(path.join("public","uploads"),{recursive:true})
     const despath=path.join(__dirname,"public","uploads",Date.now()+ext);
-    image.mv(despath,(err)=>{
-        if(err) return res.send(err)
-    })
+    const result=await new Promise((resolve,reject)=>{
+        file.mv(despath,(err)=>{
+            if(err) reject(err)
+            else resolve(true)
+        })
+      })
+    }
     res.status(201).json({
         statusCode:res.statusCode,
         data:{
