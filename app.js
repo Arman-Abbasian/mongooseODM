@@ -1,5 +1,9 @@
 const express=require("express");
-const multer=require("multer")
+const multer=require("multer");
+const fileUpload=require("express-fileupload");
+
+const patch=require("path");
+const fs=require("fs");
 
 const { NotFoundError, ErrorHandler } = require("./utils/errorHandlers");
 const { BlogModel } = require("./models/blog.model");
@@ -12,6 +16,7 @@ const { validate } = require("express-validation");
 const { signupValidationWithJoi } = require("./validator/signup.joi.validator");
 const { SignupSchemaWithValidate } = require("./validator/signup.validate.validator");
 const { uploadFile, uploadSomeFiles } = require("./middlewares/multer");
+const path = require("path");
 
 
 const app=express();
@@ -19,6 +24,7 @@ require("./config/mongo.config");
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
 app.use(express.static("public"))
+app.use(fileUpload())
 app.get("/",(req,res)=>{
     res.send("ok")
 })
@@ -317,6 +323,24 @@ app.post("/validate/signup",async(req,res,next)=>{
      next(error)
     }
  });
+ //send one file with express-fileupload paackage
+ app.post("/express-fileUpload-buffer",(req,res)=>{
+    console.log(req.files);
+    const image=req.files.image;
+    const ext=path.extname(image.name);
+    fs.mkdirSync(path.join("public","uploads"),{recursive:true})
+    const despath=path.join(__dirname,"public","uploads",Date.now()+ext);
+    const buffer=Buffer.from(image.data)
+    fs.writeFileSync(despath,buffer);
+    res.status(201).json({
+        statusCode:res.statusCode,
+        data:{
+           body:req.body,
+           file:req.files,
+            message:"data sent successfully"
+        }
+ })
+});
 app.use(ErrorHandler);
 app.use(NotFoundError);
 app.listen(3000,()=>{
