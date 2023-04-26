@@ -2,7 +2,7 @@ const express=require("express");
 const multer=require("multer");
 const fileUpload=require("express-fileupload");
 
-const patch=require("path");
+const path=require("path");
 const fs=require("fs");
 
 const { NotFoundError, ErrorHandler } = require("./utils/errorHandlers");
@@ -16,7 +16,7 @@ const { validate } = require("express-validation");
 const { signupValidationWithJoi } = require("./validator/signup.joi.validator");
 const { SignupSchemaWithValidate } = require("./validator/signup.validate.validator");
 const { uploadFile, uploadSomeFiles } = require("./middlewares/multer");
-const path = require("path");
+const allRoutes=require("./routers/index");
 
 
 const app=express();
@@ -25,6 +25,7 @@ app.use(express.json())
 app.use(express.urlencoded({extended:true}))
 app.use(express.static("public"))
 app.use(fileUpload())
+app.use(allRoutes)
 app.get("/",(req,res)=>{
     res.send("ok")
 })
