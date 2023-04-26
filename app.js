@@ -323,7 +323,7 @@ app.post("/validate/signup",async(req,res,next)=>{
      next(error)
     }
  });
- //send one file with express-fileupload paackage
+ //send one file with express-fileupload(buffer) paackage
  app.post("/express-fileUpload-buffer",(req,res)=>{
     console.log(req.files);
     const image=req.files.image;
@@ -332,6 +332,48 @@ app.post("/validate/signup",async(req,res,next)=>{
     const despath=path.join(__dirname,"public","uploads",Date.now()+ext);
     const buffer=Buffer.from(image.data)
     fs.writeFileSync(despath,buffer);
+    res.status(201).json({
+        statusCode:res.statusCode,
+        data:{
+           body:req.body,
+           file:req.files,
+            message:"data sent successfully"
+        }
+ })
+});
+ //send one file with express-fileupload (mv) paackage
+ app.post("/express-fileUpload-mv",(req,res)=>{
+    if(!req.files|| Object.keys(req.files).length==0){
+        throw {status:400,message:"no file uploaded"}
+    }
+    const image=req.files.image;
+    const ext=path.extname(image.name);
+    fs.mkdirSync(path.join("public","uploads"),{recursive:true})
+    const despath=path.join(__dirname,"public","uploads",Date.now()+ext);
+    image.mv(despath,(err)=>{
+        if(err) return res.send(err)
+    })
+    res.status(201).json({
+        statusCode:res.statusCode,
+        data:{
+           body:req.body,
+           file:req.files,
+            message:"data sent successfully"
+        }
+ })
+});
+ //send some files with express-fileupload (mv) paackage
+ app.post("/express-fileUpload-mv-someFiles",(req,res)=>{
+    if(!req.files|| Object.keys(req.files).length==0){
+        throw {status:400,message:"no file uploaded"}
+    }
+    const image=req.files.image;
+    const ext=path.extname(image.name);
+    fs.mkdirSync(path.join("public","uploads"),{recursive:true})
+    const despath=path.join(__dirname,"public","uploads",Date.now()+ext);
+    image.mv(despath,(err)=>{
+        if(err) return res.send(err)
+    })
     res.status(201).json({
         statusCode:res.statusCode,
         data:{
